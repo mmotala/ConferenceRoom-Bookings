@@ -10,10 +10,6 @@
     <ProjectReference Include="..\ConferenceRoom.Domain\ConferenceRoom.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Features\Bookings\" />
-  </ItemGroup>
-
   <PropertyGroup>
 	  <OutputType>Library</OutputType>
     <TargetFramework>net9.0</TargetFramework>

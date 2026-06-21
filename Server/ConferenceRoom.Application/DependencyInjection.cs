@@ -1,6 +1,5 @@
-﻿using ConferenceRoomBooking.Application.Features.Bookings;
-using ConferenceRoomBooking.Application.Features.Rooms;
-using ConferenceRoomBooking.Application.Features.Users;
+﻿
+
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,6 +14,13 @@ public static class DependencyInjection
         services.AddScoped<CreateRoom.Handler>();
         services.AddScoped<GetRooms.Handler>();
         services.AddScoped<DeleteRoom.Handler>();
+
+        services.AddScoped<CreateBooking.Handler>();
+        services.AddScoped<GetBookings.Handler>();
+        services.AddScoped<UpdateBooking.Handler>();
+        services.AddScoped<CancelBooking.Handler>();
+
+        services.AddScoped<GetUsers.Handler>();
 
         return services;
     }

@@ -16,4 +16,8 @@
     <ProjectReference Include="..\ConferenceRoom.Infrastructure\ConferenceRoom.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Endpoints\" />
+  </ItemGroup>
+
 </Project>
