@@ -15,7 +15,7 @@
     public static readonly Guid SmallRoomId =
         Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
 
-    public static void Seed(AppDbContext context)
+    public static void Seed(ApplicationDbContext context)
     {
         if (!context.Users.Any())
         {

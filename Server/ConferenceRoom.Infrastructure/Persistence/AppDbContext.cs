@@ -1,12 +1,17 @@
+using ConferenceRoom.Domain.Entities;
+using ConferenceRoom.Application.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
-public sealed class ApplicationDbContext : DbContext
+public sealed class ApplicationDbContext : DbContext, IApplicationDbContext
 {
+    private readonly ICurrentUserService? _currentUserService;
 
     public ApplicationDbContext(
-        DbContextOptions<ApplicationDbContext> options)
+        DbContextOptions<ApplicationDbContext> options,
+        ICurrentUserService? currentUserService = null)
         : base(options)
     {
+        _currentUserService = currentUserService;
     }
 
     public DbSet<User> Users => Set<User>();
@@ -29,8 +34,7 @@ public sealed class ApplicationDbContext : DbContext
 
             builder.Property(user => user.Role)
                 .HasConversion<string>()
-                .HasMaxLength(50)
-                .IsRequired();
+                .HasMaxLength(50);
 
             builder.HasQueryFilter(user => !user.IsDeleted);
         });
@@ -41,9 +45,6 @@ public sealed class ApplicationDbContext : DbContext
 
             builder.Property(room => room.Name)
                 .HasMaxLength(100)
-                .IsRequired();
-
-            builder.Property(room => room.Capacity)
                 .IsRequired();
 
             builder.Property(room => room.Location)
@@ -57,20 +58,13 @@ public sealed class ApplicationDbContext : DbContext
         {
             builder.HasKey(booking => booking.Id);
 
-            builder.Property(booking => booking.StartTimeUtc)
-                .IsRequired();
-
-            builder.Property(booking => booking.EndTimeUtc)
-                .IsRequired();
-
             builder.Property(booking => booking.Purpose)
                 .HasMaxLength(250)
                 .IsRequired();
 
             builder.Property(booking => booking.Status)
                 .HasConversion<string>()
-                .HasMaxLength(50)
-                .IsRequired();
+                .HasMaxLength(50);
 
             builder.HasOne(booking => booking.Room)
                 .WithMany()
@@ -96,26 +90,25 @@ public sealed class ApplicationDbContext : DbContext
     private void ApplyAuditInformation()
     {
         var entries = ChangeTracker
-            .Entries<IAuditable>()
+            .Entries<BaseEntity>()
             .Where(entry =>
                 entry.State == EntityState.Added ||
                 entry.State == EntityState.Modified);
 
-        var currentUserId = Guid.NewGuid();
-        var utcNow = DateTime.UtcNow;
+        var userId = _currentUserService?.UserId;
 
         foreach (var entry in entries)
         {
             if (entry.State == EntityState.Added)
             {
-                entry.Entity.CreatedAtUtc = utcNow;
-                entry.Entity.CreatedByUserId = currentUserId;
+                entry.Entity.CreatedAtUtc = DateTime.UtcNow;
+                entry.Entity.CreatedByUserId = userId;
             }
 
             if (entry.State == EntityState.Modified)
             {
-                entry.Entity.UpdatedAtUtc = utcNow;
-                entry.Entity.UpdatedByUserId = currentUserId;
+                entry.Entity.UpdatedAtUtc = DateTime.UtcNow;
+                entry.Entity.UpdatedByUserId = userId;
             }
         }
     }

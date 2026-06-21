@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using ConferenceRoom.Application.Abstractions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 
@@ -6,7 +7,7 @@ public static class ServiceCollectionExtension
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
-        services.AddDbContext<AppDbContext>(opt =>
+        services.AddDbContext<ApplicationDbContext>(opt =>
             opt.UseInMemoryDatabase("ConferenceDb"));
 
         services.AddScoped<IApplicationDbContext>(provider =>
