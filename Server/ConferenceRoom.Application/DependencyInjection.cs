@@ -16,11 +16,14 @@ public static class DependencyInjection
         services.AddScoped<DeleteRoom.Handler>();
 
         services.AddScoped<CreateBooking.Handler>();
+        services.AddScoped<QuickBookRoom.Handler>();
         services.AddScoped<GetBookings.Handler>();
         services.AddScoped<UpdateBooking.Handler>();
         services.AddScoped<CancelBooking.Handler>();
 
         services.AddScoped<GetUsers.Handler>();
+
+        services.AddScoped<DummyLogin.Handler>();
 
         return services;
     }

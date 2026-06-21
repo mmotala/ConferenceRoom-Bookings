@@ -24,6 +24,16 @@
             return result.ToHttpResult();
         });
 
+        group.MapPost("/quick", async (
+            QuickBookRoom.Command command,
+            QuickBookRoom.Handler handler,
+            CancellationToken cancellationToken) =>
+        {
+            var result = await handler.Handle(command, cancellationToken);
+
+            return result.ToHttpResult();
+        });
+
         group.MapPut("/{bookingId:guid}", async (
             Guid bookingId,
             UpdateBookingRequest request,

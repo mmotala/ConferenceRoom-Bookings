@@ -19,4 +19,9 @@
         "Booking.CannotUpdateCancelledBooking",
         "A cancelled booking cannot be updated.",
         ErrorType.Validation);
+
+    public static readonly Error NoSuitableRoomAvailable = new(
+    "Booking.NoSuitableRoomAvailable",
+    "No suitable room is available for the requested time and number of people.",
+    ErrorType.NotFound);
 }
