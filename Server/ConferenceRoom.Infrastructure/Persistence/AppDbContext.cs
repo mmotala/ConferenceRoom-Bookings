@@ -1,5 +1,4 @@
 using ConferenceRoom.Domain.Entities;
-using ConferenceRoom.Application.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
 public sealed class ApplicationDbContext : DbContext, IApplicationDbContext
