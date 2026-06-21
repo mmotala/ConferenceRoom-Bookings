@@ -1,18 +1,60 @@
-public class Booking : IAuditable, ISoftDelete
+using ConferenceRoom.Domain.Entities;
+
+public sealed class Booking : BaseEntity
 {
-    public Guid Id { get; set; }
+    private Booking()
+    {
+    }
 
-    public Guid RoomId { get; set; }
-    public Guid UserId { get; set; }
+    public Booking(
+        Guid roomId,
+        Guid userId,
+        DateTime startTimeUtc,
+        DateTime endTimeUtc,
+        string purpose)
+    {
+        RoomId = roomId;
+        UserId = userId;
+        StartTimeUtc = startTimeUtc;
+        EndTimeUtc = endTimeUtc;
+        Purpose = purpose;
+        Status = BookingStatus.Active;
+    }
 
-    public DateTime StartTime { get; set; }
-    public DateTime EndTime { get; set; }
+    public Guid RoomId { get; private set; }
+    public Room Room { get; private set; } = null!;
 
-    public int AttendeeCount { get; set; }
+    public Guid UserId { get; private set; }
+    public User User { get; private set; } = null!;
 
-    public DateTime CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
+    public DateTime StartTimeUtc { get; private set; }
+    public DateTime EndTimeUtc { get; private set; }
 
-    public bool IsDeleted { get; set; }
-    public DateTime? DeletedAt { get; set; }
+    public string Purpose { get; private set; } = string.Empty;
+
+    public BookingStatus Status { get; private set; }
+
+    public bool IsActive => Status == BookingStatus.Active;
+
+    public void Update(
+        Guid roomId,
+        DateTime startTimeUtc,
+        DateTime endTimeUtc,
+        string purpose)
+    {
+        RoomId = roomId;
+        StartTimeUtc = startTimeUtc;
+        EndTimeUtc = endTimeUtc;
+        Purpose = purpose;
+    }
+
+    public void Cancel()
+    {
+        Status = BookingStatus.Cancelled;
+    }
+
+    public bool Overlaps(DateTime startTimeUtc, DateTime endTimeUtc)
+    {
+        return StartTimeUtc < endTimeUtc && startTimeUtc < EndTimeUtc;
+    }
 }

@@ -1,22 +1,74 @@
 ﻿public static class SeedData
 {
-    public static void Seed(AppDbContext db)
+    public static readonly Guid AdminUserId =
+        Guid.Parse("11111111-1111-1111-1111-111111111111");
+
+    public static readonly Guid NormalUserId =
+        Guid.Parse("22222222-2222-2222-2222-222222222222");
+
+    public static readonly Guid SecondUserId =
+        Guid.Parse("33333333-3333-3333-3333-333333333333");
+
+    public static readonly Guid BoardRoomId =
+        Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+
+    public static readonly Guid SmallRoomId =
+        Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+
+    public static void Seed(AppDbContext context)
     {
-        if (db.Users.Any()) return;
+        if (!context.Users.Any())
+        {
+            var admin = new User(
+                "Admin User",
+                "admin@demo.com",
+                UserRole.Admin);
 
-        var admin = new User { Id = Guid.NewGuid(), Username = "admin", Role = UserRole.Admin };
-        var john = new User { Id = Guid.NewGuid(), Username = "john", Role = UserRole.User };
-        var sarah = new User { Id = Guid.NewGuid(), Username = "sarah", Role = UserRole.User };
+            SetId(admin, AdminUserId);
 
-        db.Users.AddRange(admin, john, sarah);
+            var user = new User(
+                "Normal User",
+                "user@demo.com",
+                UserRole.User);
 
-        db.Rooms.AddRange(
-            new Room { Id = Guid.NewGuid(), Name = "Board Room", Capacity = 4, Description = "Exec room" },
-            new Room { Id = Guid.NewGuid(), Name = "Ocean View", Capacity = 8, Description = "Collab room" },
-            new Room { Id = Guid.NewGuid(), Name = "Titans", Capacity = 8, Description = "Teams room" },
-            new Room { Id = Guid.NewGuid(), Name = "Conference Hall", Capacity = 30, Description = "Large events" }
-        );
+            SetId(user, NormalUserId);
 
-        db.SaveChanges();
+            var secondUser = new User(
+                "Second User",
+                "second@demo.com",
+                UserRole.User);
+
+            SetId(secondUser, SecondUserId);
+
+            context.Users.AddRange(admin, user, secondUser);
+        }
+
+        if (!context.Rooms.Any())
+        {
+            var boardRoom = new Room(
+                "Board Room",
+                12,
+                "First Floor");
+
+            SetId(boardRoom, BoardRoomId);
+
+            var smallRoom = new Room(
+                "Small Meeting Room",
+                4,
+                "Ground Floor");
+
+            SetId(smallRoom, SmallRoomId);
+
+            context.Rooms.AddRange(boardRoom, smallRoom);
+        }
+
+        context.SaveChanges();
+    }
+
+    private static void SetId<T>(T entity, Guid id)
+    {
+        var property = typeof(T).GetProperty("Id");
+
+        property?.SetValue(entity, id);
     }
 }

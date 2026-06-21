@@ -1,11 +1,17 @@
 public interface IAuditable
 {
-    DateTime CreatedAt { get; set; }
-    DateTime? UpdatedAt { get; set; }
+    DateTime CreatedAtUtc { get; set; }
+    DateTime? UpdatedAtUtc { get; set; }
+
+    Guid? CreatedByUserId { get; set; }
+    Guid? UpdatedByUserId { get; set; }
 }
 
 public interface ISoftDelete
 {
-    bool IsDeleted { get; set; }
-    DateTime? DeletedAt { get; set; }
+    bool IsDeleted { get; }
+    DateTime? DeletedAtUtc { get; }
+    Guid? DeletedByUserId { get; }
+
+    void SoftDelete(Guid? deletedByUserId);
 }

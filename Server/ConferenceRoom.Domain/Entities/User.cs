@@ -1,12 +1,21 @@
-public class User : IAuditable, ISoftDelete
+using ConferenceRoom.Domain.Entities;
+
+public sealed class User : BaseEntity
 {
-    public Guid Id { get; set; }
-    public string Username { get; set; } = "";
-    public UserRole Role { get; set; }
+    private User()
+    {
+    }
 
-    public DateTime CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
+    public User(string name, string email, UserRole role)
+    {
+        Name = name;
+        Email = email;
+        Role = role;
+    }
 
-    public bool IsDeleted { get; set; }
-    public DateTime? DeletedAt { get; set; }
+    public string Name { get; private set; } = string.Empty;
+    public string Email { get; private set; } = string.Empty;
+    public UserRole Role { get; private set; }
+
+    public bool IsAdmin => Role == UserRole.Admin;
 }

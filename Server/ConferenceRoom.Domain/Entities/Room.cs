@@ -1,13 +1,26 @@
-public class Room : IAuditable, ISoftDelete
+using ConferenceRoom.Domain.Entities;
+
+public sealed class Room : BaseEntity
 {
-    public Guid Id { get; set; }
-    public string Name { get; set; } = "";
-    public string Description { get; set; } = "";
-    public int Capacity { get; set; }
+    private Room()
+    {
+    }
 
-    public DateTime CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
+    public Room(string name, int capacity, string location)
+    {
+        Name = name;
+        Capacity = capacity;
+        Location = location;
+    }
 
-    public bool IsDeleted { get; set; }
-    public DateTime? DeletedAt { get; set; }
+    public string Name { get; private set; } = string.Empty;
+    public int Capacity { get; private set; }
+    public string Location { get; private set; } = string.Empty;
+
+    public void Update(string name, int capacity, string location)
+    {
+        Name = name;
+        Capacity = capacity;
+        Location = location;
+    }
 }

@@ -2,16 +2,16 @@
 using Microsoft.Extensions.DependencyInjection;
 
 
-namespace ConferenceRoom.Infrastructure
+public static class ServiceCollectionExtension
 {
-    public static class DependencyInjection
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
-        public static IServiceCollection AddInfrastructure(this IServiceCollection services)
-        {
-            services.AddDbContext<AppDbContext>(opt =>
-                opt.UseInMemoryDatabase("ConferenceDb"));
+        services.AddDbContext<AppDbContext>(opt =>
+            opt.UseInMemoryDatabase("ConferenceDb"));
 
-            return services;
-        }
+        services.AddScoped<IApplicationDbContext>(provider =>
+            provider.GetRequiredService<ApplicationDbContext>());
+
+        return services;
     }
 }
