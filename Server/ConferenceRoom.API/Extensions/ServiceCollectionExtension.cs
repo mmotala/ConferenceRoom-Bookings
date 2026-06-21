@@ -7,7 +7,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICurrentUserService, DummyCurrentUserService>();
 
         services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
+        services.AddSwaggerGen(options =>
+        {
+            options.CustomSchemaIds(type => type.FullName?.Replace("+", "."));
+        });
 
         return services;
     }

@@ -1,3 +1,5 @@
+using ConferenceRoomBooking.Api.Middleware;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
@@ -7,12 +9,13 @@ builder.Services
 
 var app = builder.Build();
 
+app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 SeedDatabase(app);
@@ -28,9 +31,18 @@ static void SeedDatabase(WebApplication app)
 {
     using var scope = app.Services.CreateScope();
 
+    var logger = scope.ServiceProvider
+        .GetRequiredService<ILoggerFactory>()
+        .CreateLogger("Startup");
+
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
     SeedData.Seed(dbContext);
+
+    logger.LogInformation("Database seeded successfully.");
+    logger.LogInformation("Dummy admin: admin@demo.com");
+    logger.LogInformation("Dummy user: user@demo.com");
+    logger.LogInformation("Dummy second user: second@demo.com");
 }
 
 public partial class Program;
