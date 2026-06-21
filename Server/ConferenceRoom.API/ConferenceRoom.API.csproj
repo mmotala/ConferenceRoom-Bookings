@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ConferenceRoom.Application\ConferenceRoom.Application.csproj" />
+    <ProjectReference Include="..\ConferenceRoom.Infrastructure\ConferenceRoom.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
