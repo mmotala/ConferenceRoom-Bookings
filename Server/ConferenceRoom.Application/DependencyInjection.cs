@@ -25,6 +25,12 @@ public static class DependencyInjection
 
         services.AddScoped<DummyLogin.Handler>();
 
+        services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
+
+        services.AddScoped<IDomainEventHandler<BookingCreatedDomainEvent>, BookingCreatedDomainEventHandler>();
+        services.AddScoped<IDomainEventHandler<BookingUpdatedDomainEvent>, BookingUpdatedDomainEventHandler>();
+        services.AddScoped<IDomainEventHandler<BookingCancelledDomainEvent>, BookingCancelledDomainEventHandler>();
+
         return services;
     }
 }

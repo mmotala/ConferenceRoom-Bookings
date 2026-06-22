@@ -1,16 +1,18 @@
-using ConferenceRoom.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 public sealed class ApplicationDbContext : DbContext, IApplicationDbContext
 {
     private readonly ICurrentUserService? _currentUserService;
+    private readonly IDomainEventDispatcher? _domainEventDispatcher;
 
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options,
-        ICurrentUserService? currentUserService = null)
+        ICurrentUserService? currentUserService = null,
+        IDomainEventDispatcher? domainEventDispatcher = null)
         : base(options)
     {
         _currentUserService = currentUserService;
+        _domainEventDispatcher = domainEventDispatcher;
     }
 
     public DbSet<User> Users => Set<User>();
@@ -33,7 +35,8 @@ public sealed class ApplicationDbContext : DbContext, IApplicationDbContext
 
             builder.Property(user => user.Role)
                 .HasConversion<string>()
-                .HasMaxLength(50);
+                .HasMaxLength(50)
+                .IsRequired();
 
             builder.HasQueryFilter(user => !user.IsDeleted);
         });
@@ -44,6 +47,9 @@ public sealed class ApplicationDbContext : DbContext, IApplicationDbContext
 
             builder.Property(room => room.Name)
                 .HasMaxLength(100)
+                .IsRequired();
+
+            builder.Property(room => room.Capacity)
                 .IsRequired();
 
             builder.Property(room => room.Location)
@@ -57,13 +63,27 @@ public sealed class ApplicationDbContext : DbContext, IApplicationDbContext
         {
             builder.HasKey(booking => booking.Id);
 
+            builder.Property(booking => booking.StartTimeUtc)
+                .IsRequired();
+
+            builder.Property(booking => booking.EndTimeUtc)
+                .IsRequired();
+
             builder.Property(booking => booking.Purpose)
                 .HasMaxLength(250)
                 .IsRequired();
 
             builder.Property(booking => booking.Status)
                 .HasConversion<string>()
-                .HasMaxLength(50);
+                .HasMaxLength(50)
+                .IsRequired();
+
+            builder.HasIndex(booking => new
+            {
+                booking.RoomId,
+                booking.StartTimeUtc,
+                booking.EndTimeUtc
+            });
 
             builder.HasOne(booking => booking.Room)
                 .WithMany()
@@ -79,36 +99,71 @@ public sealed class ApplicationDbContext : DbContext, IApplicationDbContext
         });
     }
 
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         ApplyAuditInformation();
 
-        return base.SaveChangesAsync(cancellationToken);
+        var result = await base.SaveChangesAsync(cancellationToken);
+
+        await DispatchDomainEventsAsync(cancellationToken);
+
+        return result;
     }
 
     private void ApplyAuditInformation()
     {
         var entries = ChangeTracker
-            .Entries<BaseEntity>()
+            .Entries<IAuditable>()
             .Where(entry =>
                 entry.State == EntityState.Added ||
                 entry.State == EntityState.Modified);
 
-        var userId = _currentUserService?.UserId;
+        var currentUserId = _currentUserService?.UserId;
+        var utcNow = DateTime.UtcNow;
 
         foreach (var entry in entries)
         {
             if (entry.State == EntityState.Added)
             {
-                entry.Entity.CreatedAtUtc = DateTime.UtcNow;
-                entry.Entity.CreatedByUserId = userId;
+                entry.Entity.CreatedAtUtc = utcNow;
+                entry.Entity.CreatedByUserId = currentUserId;
             }
 
             if (entry.State == EntityState.Modified)
             {
-                entry.Entity.UpdatedAtUtc = DateTime.UtcNow;
-                entry.Entity.UpdatedByUserId = userId;
+                entry.Entity.UpdatedAtUtc = utcNow;
+                entry.Entity.UpdatedByUserId = currentUserId;
             }
         }
+    }
+
+    private async Task DispatchDomainEventsAsync(CancellationToken cancellationToken)
+    {
+        if (_domainEventDispatcher is null)
+        {
+            return;
+        }
+
+        var entitiesWithEvents = ChangeTracker
+            .Entries<BaseEntity>()
+            .Select(entry => entry.Entity)
+            .Where(entity => entity.DomainEvents.Count != 0)
+            .ToList();
+
+        if (entitiesWithEvents.Count == 0)
+        {
+            return;
+        }
+
+        var domainEvents = entitiesWithEvents
+            .SelectMany(entity => entity.DomainEvents)
+            .ToList();
+
+        foreach (var entity in entitiesWithEvents)
+        {
+            entity.ClearDomainEvents();
+        }
+
+        await _domainEventDispatcher.DispatchAsync(domainEvents, cancellationToken);
     }
 }

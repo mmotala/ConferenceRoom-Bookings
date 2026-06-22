@@ -1,10 +1,5 @@
-using ConferenceRoom.Domain.Entities;
-
 public sealed class User : BaseEntity
 {
-    private User()
-    {
-    }
 
     public User(string name, string email, UserRole role)
     {

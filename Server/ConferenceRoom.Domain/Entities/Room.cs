@@ -1,11 +1,5 @@
-using ConferenceRoom.Domain.Entities;
-
 public sealed class Room : BaseEntity
 {
-    private Room()
-    {
-    }
-
     public Room(string name, int capacity, string location)
     {
         Name = name;

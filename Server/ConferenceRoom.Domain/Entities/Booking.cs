@@ -1,11 +1,5 @@
-using ConferenceRoom.Domain.Entities;
-
 public sealed class Booking : BaseEntity
 {
-    private Booking()
-    {
-    }
-
     public Booking(
         Guid roomId,
         Guid userId,
@@ -19,6 +13,15 @@ public sealed class Booking : BaseEntity
         EndTimeUtc = endTimeUtc;
         Purpose = purpose;
         Status = BookingStatus.Active;
+
+        RaiseDomainEvent(new BookingCreatedDomainEvent(
+            Id,
+            RoomId,
+            UserId,
+            StartTimeUtc,
+            EndTimeUtc,
+            Purpose,
+            DateTime.UtcNow));
     }
 
     public Guid RoomId { get; private set; }
@@ -46,15 +49,27 @@ public sealed class Booking : BaseEntity
         StartTimeUtc = startTimeUtc;
         EndTimeUtc = endTimeUtc;
         Purpose = purpose;
+
+        RaiseDomainEvent(new BookingUpdatedDomainEvent(
+            Id,
+            RoomId,
+            UserId,
+            StartTimeUtc,
+            EndTimeUtc,
+            Purpose,
+            DateTime.UtcNow));
     }
 
     public void Cancel()
     {
         Status = BookingStatus.Cancelled;
-    }
 
-    public bool Overlaps(DateTime startTimeUtc, DateTime endTimeUtc)
-    {
-        return StartTimeUtc < endTimeUtc && startTimeUtc < EndTimeUtc;
+        RaiseDomainEvent(new BookingCancelledDomainEvent(
+            Id,
+            RoomId,
+            UserId,
+            StartTimeUtc,
+            EndTimeUtc,
+            DateTime.UtcNow));
     }
 }
