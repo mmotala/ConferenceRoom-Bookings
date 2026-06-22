@@ -14,6 +14,16 @@
             return result.ToHttpResult();
         });
 
+        group.MapPost("/users", async (
+            CreateUser.Command command,
+            CreateUser.Handler handler,
+            CancellationToken cancellationToken) =>
+        {
+            var result = await handler.Handle(command, cancellationToken);
+
+            return result.ToHttpResult();
+        });
+
         return app;
     }
 }

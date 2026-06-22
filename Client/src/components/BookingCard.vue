@@ -40,11 +40,7 @@ function getBookingId() {
       <span>{{ formatDate(booking.endTimeUtc) }}</span>
     </div>
 
-    <button
-      v-if="booking.status === 'Active'"
-      class="danger-button"
-      @click="emit('cancel', getBookingId())"
-    >
+    <button v-if="booking.status === 'Active'" class="danger-button" @click="emit('cancel', getBookingId())">
       Cancel booking
     </button>
   </article>

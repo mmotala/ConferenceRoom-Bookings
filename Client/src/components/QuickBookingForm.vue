@@ -2,7 +2,12 @@
 import { reactive, ref } from 'vue';
 import { quickBookRoom } from '@/api/bookingsApi';
 import type { Booking } from '@/types/booking';
-import { getDefaultStartTime, getDefaultEndTime, toUtcIsoString } from '@/utils/dateUtils';
+import { getDefaultStartTime, getDefaultEndTime } from '@/utils/dateUtils';
+import {
+  validateDateRange,
+  validatePositiveNumber,
+  validateRequired
+} from '@/utils/validation';
 
 const emit = defineEmits<{
   created: [booking: Booking];
@@ -19,8 +24,14 @@ const form = reactive({
 });
 
 async function submit() {
-  if (!form.startTime || !form.endTime || !form.purpose) {
-    emit('error', 'Please complete all quick booking fields');
+  const errors = [
+    validateDateRange(form.startTime, form.endTime),
+    validatePositiveNumber(Number(form.numberOfPeople), 'Number of people'),
+    validateRequired(form.purpose, 'Purpose')
+  ].filter(Boolean);
+
+  if (errors.length > 0) {
+    emit('error', errors[0]!);
     return;
   }
 
@@ -28,8 +39,8 @@ async function submit() {
 
   try {
     const booking = await quickBookRoom({
-      startTimeUtc: toUtcIsoString(form.startTime),
-      endTimeUtc: toUtcIsoString(form.endTime),
+      startTimeUtc: new Date(form.startTime).toISOString(),
+      endTimeUtc: new Date(form.endTime).toISOString(),
       numberOfPeople: Number(form.numberOfPeople),
       purpose: form.purpose
     });

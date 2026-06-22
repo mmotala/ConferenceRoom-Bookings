@@ -5,9 +5,12 @@ import type { Booking } from '@/types/booking';
 import type { Room } from '@/types/room';
 import {
   getDefaultEndTime,
-  getDefaultStartTime,
-  toUtcIsoString
+  getDefaultStartTime
 } from '@/utils/dateUtils';
+import {
+  validateDateRange,
+  validateRequired
+} from '@/utils/validation';
 
 defineProps<{
   rooms: Room[];
@@ -28,8 +31,14 @@ const form = reactive({
 });
 
 async function submit() {
-  if (!form.roomId || !form.startTime || !form.endTime || !form.purpose) {
-    emit('error', 'Please complete all booking fields');
+  const errors = [
+    validateRequired(form.roomId, 'Room'),
+    validateDateRange(form.startTime, form.endTime),
+    validateRequired(form.purpose, 'Purpose')
+  ].filter(Boolean);
+
+  if (errors.length > 0) {
+    emit('error', errors[0]!);
     return;
   }
 
@@ -38,8 +47,8 @@ async function submit() {
   try {
     const booking = await createBooking({
       roomId: form.roomId,
-      startTimeUtc: toUtcIsoString(form.startTime),
-      endTimeUtc: toUtcIsoString(form.endTime),
+      startTimeUtc: new Date(form.startTime).toISOString(),
+      endTimeUtc: new Date(form.endTime).toISOString(),
       purpose: form.purpose
     });
 

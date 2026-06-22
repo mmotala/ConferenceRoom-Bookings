@@ -11,4 +11,12 @@ export type DummyLoginRequest = {
   email: string;
 };
 
+export type CreateUserRequest = {
+  name: string;
+  email: string;
+  role: UserRole;
+};
+
 export type CurrentUser = DummyUser;
+
+

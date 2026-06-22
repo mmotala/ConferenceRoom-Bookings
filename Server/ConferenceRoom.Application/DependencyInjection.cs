@@ -22,6 +22,7 @@ public static class DependencyInjection
         services.AddScoped<CancelBooking.Handler>();
 
         services.AddScoped<GetUsers.Handler>();
+        services.AddScoped<CreateUser.Handler>();
 
         services.AddScoped<DummyLogin.Handler>();
 

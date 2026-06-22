@@ -14,4 +14,9 @@
         "User.Forbidden",
         "You do not have permission to perform this action.",
         ErrorType.Forbidden);
+
+    public static readonly Error EmailAlreadyExists = new(
+    "User.EmailAlreadyExists",
+    "A user with this email already exists.",
+    ErrorType.Conflict);
 }

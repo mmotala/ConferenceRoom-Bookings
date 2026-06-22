@@ -20,6 +20,7 @@ import type { Booking } from '@/types/booking';
 import type { CurrentUser } from '@/types/auth';
 import type { Room } from '@/types/room';
 import AdminRoomsPanel from '@/components/AdminRoomsPanel.vue';
+import AdminUsersPanel from '@/components/AdminUsersPanel.vue';
 
 const currentUser = ref<CurrentUser | null>(getCurrentUser());
 const rooms = ref<Room[]>([]);
@@ -119,6 +120,8 @@ function showToast(message: string, type: 'success' | 'error') {
       <AdminRoomsPanel v-if="currentUser?.role === 'Admin'" :rooms="rooms" @changed="loadDashboard"
         @success="showSuccess" @error="showError" />
 
+      <AdminUsersPanel v-if="currentUser?.role === 'Admin'" @success="showSuccess" @error="showError" />
+
       <section class="content-grid">
         <section class="panel">
           <div class="section-header">
@@ -143,7 +146,7 @@ function showToast(message: string, type: 'success' | 'error') {
           <div class="section-header">
             <div>
               <p class="eyebrow">Bookings</p>
-              <h2>Your bookings</h2>
+              <h2>{{ currentUser?.role === 'Admin' ? 'All bookings' : 'My bookings' }}</h2>
             </div>
 
             <span class="count-pill">{{ bookings.length }}</span>
@@ -154,7 +157,7 @@ function showToast(message: string, type: 'success' | 'error') {
           </div>
 
           <div v-else-if="bookings.length === 0" class="empty-state">
-            No bookings yet.
+            {{ currentUser?.role === 'Admin' ? 'No bookings found.' : 'You have no bookings yet.' }}
           </div>
 
           <div v-else class="cards-list">
