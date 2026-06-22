@@ -3,6 +3,11 @@ import { reactive, ref } from 'vue';
 import { createBooking } from '@/api/bookingsApi';
 import type { Booking } from '@/types/booking';
 import type { Room } from '@/types/room';
+import {
+  getDefaultEndTime,
+  getDefaultStartTime,
+  toUtcIsoString
+} from '@/utils/dateUtils';
 
 defineProps<{
   rooms: Room[];
@@ -17,8 +22,8 @@ const isLoading = ref(false);
 
 const form = reactive({
   roomId: '',
-  startTime: '',
-  endTime: '',
+  startTime: getDefaultStartTime(),
+  endTime: getDefaultEndTime(),
   purpose: ''
 });
 
@@ -33,8 +38,8 @@ async function submit() {
   try {
     const booking = await createBooking({
       roomId: form.roomId,
-      startTimeUtc: new Date(form.startTime).toISOString(),
-      endTimeUtc: new Date(form.endTime).toISOString(),
+      startTimeUtc: toUtcIsoString(form.startTime),
+      endTimeUtc: toUtcIsoString(form.endTime),
       purpose: form.purpose
     });
 

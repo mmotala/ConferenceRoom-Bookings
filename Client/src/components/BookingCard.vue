@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Booking } from '@/types/booking';
+import { formatBookingDate } from '@/utils/dateUtils';
 
 const props = defineProps<{
   booking: Booking;
@@ -10,7 +11,7 @@ const emit = defineEmits<{
 }>();
 
 function formatDate(value: string) {
-  return new Date(value).toLocaleString();
+  return formatBookingDate(value);
 }
 
 function getBookingId() {

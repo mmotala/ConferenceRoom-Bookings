@@ -2,6 +2,7 @@
 import { reactive, ref } from 'vue';
 import { quickBookRoom } from '@/api/bookingsApi';
 import type { Booking } from '@/types/booking';
+import { getDefaultStartTime, getDefaultEndTime, toUtcIsoString } from '@/utils/dateUtils';
 
 const emit = defineEmits<{
   created: [booking: Booking];
@@ -11,8 +12,8 @@ const emit = defineEmits<{
 const isLoading = ref(false);
 
 const form = reactive({
-  startTime: '',
-  endTime: '',
+  startTime: getDefaultStartTime(),
+  endTime: getDefaultEndTime(),
   numberOfPeople: 1,
   purpose: ''
 });
@@ -27,8 +28,8 @@ async function submit() {
 
   try {
     const booking = await quickBookRoom({
-      startTimeUtc: new Date(form.startTime).toISOString(),
-      endTimeUtc: new Date(form.endTime).toISOString(),
+      startTimeUtc: toUtcIsoString(form.startTime),
+      endTimeUtc: toUtcIsoString(form.endTime),
       numberOfPeople: Number(form.numberOfPeople),
       purpose: form.purpose
     });
