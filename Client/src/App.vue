@@ -1,85 +1,187 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+import { onMounted, ref } from 'vue';
+
+import AppHeader from '@/components/AppHeader.vue';
+import BookingCard from '@/components/BookingCard.vue';
+import BookingForm from '@/components/BookingForm.vue';
+import LoginPanel from '@/components/LoginPanel.vue';
+import QuickBookingForm from '@/components/QuickBookingForm.vue';
+import RoomCard from '@/components/RoomCard.vue';
+import Toast from '@/components/Toast.vue';
+
+import { cancelBooking, getBookings } from '@/api/bookingsApi';
+import { getRooms } from '@/api/roomsApi';
+import {
+  clearCurrentUser,
+  getCurrentUser
+} from '@/stores/currentUserStore';
+
+import type { Booking } from '@/types/booking';
+import type { CurrentUser } from '@/types/auth';
+import type { Room } from '@/types/room';
+
+const currentUser = ref<CurrentUser | null>(getCurrentUser());
+const rooms = ref<Room[]>([]);
+const bookings = ref<Booking[]>([]);
+const isLoading = ref(false);
+
+const toast = ref<{
+  message: string;
+  type: 'success' | 'error';
+} | null>(null);
+
+onMounted(async () => {
+  if (currentUser.value) {
+    await loadDashboard();
+  }
+});
+
+async function loadDashboard() {
+  isLoading.value = true;
+
+  try {
+    const [roomsResponse, bookingsResponse] = await Promise.all([
+      getRooms(),
+      getBookings()
+    ]);
+
+    rooms.value = roomsResponse;
+    bookings.value = bookingsResponse;
+  } catch (error) {
+    showError(error instanceof Error ? error.message : 'Failed to load dashboard');
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+async function onLoggedIn(user: CurrentUser) {
+  currentUser.value = user;
+  showSuccess(`Logged in as ${user.name}`);
+  await loadDashboard();
+}
+
+function logout() {
+  clearCurrentUser();
+  currentUser.value = null;
+  rooms.value = [];
+  bookings.value = [];
+  showSuccess('Logged out');
+}
+
+async function onBookingCreated() {
+  showSuccess('Booking created successfully');
+  await loadDashboard();
+}
+
+async function onCancelBooking(bookingId: string) {
+  try {
+    await cancelBooking(bookingId);
+    showSuccess('Booking cancelled');
+    await loadDashboard();
+  } catch (error) {
+    showError(error instanceof Error ? error.message : 'Failed to cancel booking');
+  }
+}
+
+function showSuccess(message: string) {
+  showToast(message, 'success');
+}
+
+function showError(message: string) {
+  showToast(message, 'error');
+}
+
+function showToast(message: string, type: 'success' | 'error') {
+  toast.value = { message, type };
+
+  window.setTimeout(() => {
+    toast.value = null;
+  }, 3500);
+}
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
+  <main class="app-shell">
+    <AppHeader :current-user="currentUser" @logout="logout" />
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+    <Toast
+      v-if="toast"
+      :message="toast.message"
+      :type="toast.type"
+    />
 
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
-    </div>
-  </header>
+    <LoginPanel
+      v-if="!currentUser"
+      @logged-in="onLoggedIn"
+      @error="showError"
+    />
 
-  <RouterView />
+    <template v-else>
+      <section class="dashboard-grid">
+        <QuickBookingForm
+          @created="onBookingCreated"
+          @error="showError"
+        />
+
+        <BookingForm
+          :rooms="rooms"
+          @created="onBookingCreated"
+          @error="showError"
+        />
+      </section>
+
+      <section class="content-grid">
+        <section class="panel">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Rooms</p>
+              <h2>Available rooms</h2>
+            </div>
+
+            <span class="count-pill">{{ rooms.length }}</span>
+          </div>
+
+          <div v-if="isLoading" class="empty-state">
+            Loading rooms...
+          </div>
+
+          <div v-else class="cards-list">
+            <RoomCard
+              v-for="room in rooms"
+              :key="room.id"
+              :room="room"
+            />
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Bookings</p>
+              <h2>Your bookings</h2>
+            </div>
+
+            <span class="count-pill">{{ bookings.length }}</span>
+          </div>
+
+          <div v-if="isLoading" class="empty-state">
+            Loading bookings...
+          </div>
+
+          <div v-else-if="bookings.length === 0" class="empty-state">
+            No bookings yet.
+          </div>
+
+          <div v-else class="cards-list">
+            <BookingCard
+              v-for="booking in bookings"
+              :key="booking.id ?? booking.bookingId"
+              :booking="booking"
+              @cancel="onCancelBooking"
+            />
+          </div>
+        </section>
+      </section>
+    </template>
+  </main>
 </template>
-
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
-}
-</style>
