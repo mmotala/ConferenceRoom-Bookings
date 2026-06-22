@@ -19,6 +19,7 @@ import {
 import type { Booking } from '@/types/booking';
 import type { CurrentUser } from '@/types/auth';
 import type { Room } from '@/types/room';
+import AdminRoomsPanel from '@/components/AdminRoomsPanel.vue';
 
 const currentUser = ref<CurrentUser | null>(getCurrentUser());
 const rooms = ref<Room[]>([]);
@@ -104,31 +105,19 @@ function showToast(message: string, type: 'success' | 'error') {
   <main class="app-shell">
     <AppHeader :current-user="currentUser" @logout="logout" />
 
-    <Toast
-      v-if="toast"
-      :message="toast.message"
-      :type="toast.type"
-    />
+    <Toast v-if="toast" :message="toast.message" :type="toast.type" />
 
-    <LoginPanel
-      v-if="!currentUser"
-      @logged-in="onLoggedIn"
-      @error="showError"
-    />
+    <LoginPanel v-if="!currentUser" @logged-in="onLoggedIn" @error="showError" />
 
     <template v-else>
       <section class="dashboard-grid">
-        <QuickBookingForm
-          @created="onBookingCreated"
-          @error="showError"
-        />
+        <QuickBookingForm @created="onBookingCreated" @error="showError" />
 
-        <BookingForm
-          :rooms="rooms"
-          @created="onBookingCreated"
-          @error="showError"
-        />
+        <BookingForm :rooms="rooms" @created="onBookingCreated" @error="showError" />
       </section>
+
+      <AdminRoomsPanel v-if="currentUser?.role === 'Admin'" :rooms="rooms" @changed="loadDashboard"
+        @success="showSuccess" @error="showError" />
 
       <section class="content-grid">
         <section class="panel">
@@ -146,11 +135,7 @@ function showToast(message: string, type: 'success' | 'error') {
           </div>
 
           <div v-else class="cards-list">
-            <RoomCard
-              v-for="room in rooms"
-              :key="room.id"
-              :room="room"
-            />
+            <RoomCard v-for="room in rooms" :key="room.id" :room="room" />
           </div>
         </section>
 
@@ -173,12 +158,8 @@ function showToast(message: string, type: 'success' | 'error') {
           </div>
 
           <div v-else class="cards-list">
-            <BookingCard
-              v-for="booking in bookings"
-              :key="booking.id ?? booking.bookingId"
-              :booking="booking"
-              @cancel="onCancelBooking"
-            />
+            <BookingCard v-for="booking in bookings" :key="booking.id ?? booking.bookingId" :booking="booking"
+              @cancel="onCancelBooking" />
           </div>
         </section>
       </section>
