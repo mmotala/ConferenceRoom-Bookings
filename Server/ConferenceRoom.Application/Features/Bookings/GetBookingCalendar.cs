@@ -1,9 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-public static class GetBookings
+namespace ConferenceRoomBooking.Application.Features.Bookings;
+
+public static class GetBookingCalendar
 {
+    public sealed record Query(
+        DateTime FromUtc,
+        DateTime ToUtc,
+        Guid? RoomId,
+        bool IncludeCancelled = false);
+
     public sealed record Response(
-        Guid Id,
+        Guid BookingId,
         Guid RoomId,
         string RoomName,
         Guid UserId,
@@ -11,46 +19,46 @@ public static class GetBookings
         DateTime StartTimeUtc,
         DateTime EndTimeUtc,
         string Purpose,
-        string Status);
+        string Status,
+        Guid? RecurringBookingSeriesId);
 
     public sealed class Handler
     {
         private readonly IApplicationDbContext _context;
-        private readonly ICurrentUserService _currentUserService;
 
-        public Handler(
-            IApplicationDbContext context,
-            ICurrentUserService currentUserService)
+        public Handler(IApplicationDbContext context)
         {
             _context = context;
-            _currentUserService = currentUserService;
         }
 
         public async Task<Result<List<Response>>> Handle(
-            BookingStatus? status = null,
+            Query query,
             CancellationToken cancellationToken = default)
         {
-            if (!_currentUserService.IsAuthenticated || _currentUserService.UserId is null)
+            if (query.ToUtc <= query.FromUtc)
             {
-                return Result.Failure<List<Response>>(UserErrors.Unauthorized);
+                return Result.Failure<List<Response>>(
+                    Error.Validation("Calendar end date must be after start date."));
             }
 
-            var query = _context.Bookings
+            var bookingsQuery = _context.Bookings
                 .Include(booking => booking.Room)
                 .Include(booking => booking.User)
-                .AsQueryable();
+                .Where(booking =>
+                    booking.StartTimeUtc < query.ToUtc &&
+                    query.FromUtc < booking.EndTimeUtc);
 
-            if (!_currentUserService.IsAdmin)
+            if (query.RoomId.HasValue)
             {
-                query = query.Where(booking => booking.UserId == _currentUserService.UserId.Value);
+                bookingsQuery = bookingsQuery.Where(booking => booking.RoomId == query.RoomId.Value);
             }
 
-            if (status.HasValue)
+            if (!query.IncludeCancelled)
             {
-                query = query.Where(booking => booking.Status == status.Value);
+                bookingsQuery = bookingsQuery.Where(booking => booking.Status == BookingStatus.Active);
             }
 
-            var bookings = await query
+            var bookings = await bookingsQuery
                 .OrderBy(booking => booking.StartTimeUtc)
                 .Select(booking => new Response(
                     booking.Id,
@@ -61,7 +69,8 @@ public static class GetBookings
                     booking.StartTimeUtc,
                     booking.EndTimeUtc,
                     booking.Purpose,
-                    booking.Status.ToString()))
+                    booking.Status.ToString(),
+                    booking.RecurringBookingSeriesId))
                 .ToListAsync(cancellationToken);
 
             return Result.Success(bookings);

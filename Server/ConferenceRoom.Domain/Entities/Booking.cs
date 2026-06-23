@@ -5,13 +5,15 @@ public sealed class Booking : BaseEntity
         Guid userId,
         DateTime startTimeUtc,
         DateTime endTimeUtc,
-        string purpose)
+        string purpose,
+        Guid? recurringBookingSeriesId = null)
     {
         RoomId = roomId;
         UserId = userId;
         StartTimeUtc = startTimeUtc;
         EndTimeUtc = endTimeUtc;
         Purpose = purpose;
+        RecurringBookingSeriesId = recurringBookingSeriesId;
         Status = BookingStatus.Active;
 
         RaiseDomainEvent(new BookingCreatedDomainEvent(
@@ -38,6 +40,9 @@ public sealed class Booking : BaseEntity
     public BookingStatus Status { get; private set; }
 
     public bool IsActive => Status == BookingStatus.Active;
+
+    public Guid? RecurringBookingSeriesId { get; private set; }
+    public RecurringBookingSeries? RecurringBookingSeries { get; private set; }
 
     public void Update(
         Guid roomId,
