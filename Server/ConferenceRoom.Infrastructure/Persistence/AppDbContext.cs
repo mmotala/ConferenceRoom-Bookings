@@ -18,6 +18,7 @@ public sealed class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<Room> Rooms => Set<Room>();
     public DbSet<Booking> Bookings => Set<Booking>();
+    public DbSet<RecurringBookingSeries> RecurringBookingSeries => Set<RecurringBookingSeries>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -78,6 +79,9 @@ public sealed class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasMaxLength(50)
                 .IsRequired();
 
+            builder.Property(booking => booking.RecurringBookingSeriesId)
+                .IsRequired(false);
+
             builder.HasIndex(booking => new
             {
                 booking.RoomId,
@@ -95,7 +99,28 @@ public sealed class ApplicationDbContext : DbContext, IApplicationDbContext
                 .HasForeignKey(booking => booking.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasOne(booking => booking.RecurringBookingSeries)
+                .WithMany()
+                .HasForeignKey(booking => booking.RecurringBookingSeriesId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             builder.HasQueryFilter(booking => !booking.IsDeleted);
+
+            modelBuilder.Entity<RecurringBookingSeries>(builder =>
+            {
+                builder.HasKey(series => series.Id);
+
+                builder.Property(series => series.Purpose)
+                    .HasMaxLength(250)
+                    .IsRequired();
+
+                builder.Property(series => series.RecurrenceType)
+                    .HasConversion<string>()
+                    .HasMaxLength(50)
+                    .IsRequired();
+
+                builder.HasQueryFilter(series => !series.IsDeleted);
+            });
         });
     }
 

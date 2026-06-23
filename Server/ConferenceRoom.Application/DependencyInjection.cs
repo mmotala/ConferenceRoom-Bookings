@@ -1,5 +1,6 @@
 ﻿
 
+using ConferenceRoomBooking.Application.Features.Bookings;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,6 +21,10 @@ public static class DependencyInjection
         services.AddScoped<GetBookings.Handler>();
         services.AddScoped<UpdateBooking.Handler>();
         services.AddScoped<CancelBooking.Handler>();
+
+        services.AddScoped<CreateRecurringBooking.Handler>();
+        services.AddScoped<CancelRecurringBookingSeries.Handler>();
+        services.AddScoped<GetBookingCalendar.Handler>();
 
         services.AddScoped<GetUsers.Handler>();
         services.AddScoped<CreateUser.Handler>();
