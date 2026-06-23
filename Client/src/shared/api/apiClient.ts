@@ -1,6 +1,6 @@
 import { getCurrentUser } from '@/features/users/stores/currentUserStore';
 
-const baseUrl = import.meta.env.VITE_API_BASE_URL;
+const baseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5096';
 
 type ApiOptions = {
   method?: string;
