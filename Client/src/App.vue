@@ -1,26 +1,26 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
-import AppHeader from '@/components/AppHeader.vue';
-import BookingCard from '@/components/BookingCard.vue';
-import BookingForm from '@/components/BookingForm.vue';
-import LoginPanel from '@/components/LoginPanel.vue';
-import QuickBookingForm from '@/components/QuickBookingForm.vue';
-import RoomCard from '@/components/RoomCard.vue';
-import Toast from '@/components/Toast.vue';
-
-import { cancelBooking, getBookings } from '@/api/bookingsApi';
-import { getRooms } from '@/api/roomsApi';
+import BookingCalendar from '@/features/bookings/components/BookingCalendar.vue';
+import BookingCard from '@/features/bookings/components/BookingCard.vue';
+import BookingForm from '@/features/bookings/components/BookingForm.vue';
+import QuickBookingForm from '@/features/bookings/components/QuickBookingForm.vue';
+import RecurringBookingForm from '@/features/bookings/components/RecurringBookingForm.vue';
+import { cancelBooking, getBookings, cancelRecurringSeries } from '@/features/bookings/api/bookingsApi';
+import type { Booking, BookingStatus } from '@/features/bookings/types/booking';
+import AdminRoomsPanel from '@/features/rooms/components/AdminRoomsPanel.vue';
+import RoomCard from '@/features/rooms/components/RoomCard.vue';
+import { getRooms } from '@/features/rooms/api/roomsApi';
+import type { Room } from '@/features/rooms/types/room';
+import AdminUsersPanel from '@/features/users/components/AdminUsersPanel.vue';
+import LoginPanel from '@/features/users/components/LoginPanel.vue';
 import {
   clearCurrentUser,
   getCurrentUser
-} from '@/stores/currentUserStore';
-
-import type { Booking } from '@/types/booking';
-import type { CurrentUser } from '@/types/auth';
-import type { Room } from '@/types/room';
-import AdminRoomsPanel from '@/components/AdminRoomsPanel.vue';
-import AdminUsersPanel from '@/components/AdminUsersPanel.vue';
+} from '@/features/users/stores/currentUserStore';
+import type { CurrentUser } from '@/features/users/types/auth';
+import AppHeader from '@/shared/components/AppHeader.vue';
+import Toast from '@/shared/components/Toast.vue';
 
 const currentUser = ref<CurrentUser | null>(getCurrentUser());
 const rooms = ref<Room[]>([]);
@@ -32,6 +32,8 @@ const toast = ref<{
   type: 'success' | 'error';
 } | null>(null);
 
+const bookingStatusFilter = ref<BookingStatus | undefined>('Active');
+
 onMounted(async () => {
   if (currentUser.value) {
     await loadDashboard();
@@ -39,12 +41,16 @@ onMounted(async () => {
 });
 
 async function loadDashboard() {
+  if (!currentUser.value) {
+    return;
+  }
+
   isLoading.value = true;
 
   try {
     const [roomsResponse, bookingsResponse] = await Promise.all([
       getRooms(),
-      getBookings()
+      getBookings(bookingStatusFilter.value)
     ]);
 
     rooms.value = roomsResponse;
@@ -85,6 +91,16 @@ async function onCancelBooking(bookingId: string) {
   }
 }
 
+async function onCancelSeries(seriesId: string) {
+  try {
+    await cancelRecurringSeries(seriesId);
+    showSuccess('Recurring event cancelled');
+    await loadDashboard();
+  } catch (error) {
+    showError(error instanceof Error ? error.message : 'Failed to cancel recurring event');
+  }
+}
+
 function showSuccess(message: string) {
   showToast(message, 'success');
 }
@@ -100,6 +116,10 @@ function showToast(message: string, type: 'success' | 'error') {
     toast.value = null;
   }, 3500);
 }
+
+watch(bookingStatusFilter, async () => {
+  await loadDashboard();
+});
 </script>
 
 <template>
@@ -112,9 +132,11 @@ function showToast(message: string, type: 'success' | 'error') {
 
     <template v-else>
       <section class="dashboard-grid">
+        <BookingCalendar :rooms="rooms" @error="showError" />
         <QuickBookingForm @created="onBookingCreated" @error="showError" />
 
         <BookingForm :rooms="rooms" @created="onBookingCreated" @error="showError" />
+        <RecurringBookingForm :rooms="rooms" @created="onBookingCreated" @error="showError" />
       </section>
 
       <AdminRoomsPanel v-if="currentUser?.role === 'Admin'" :rooms="rooms" @changed="loadDashboard"
@@ -145,11 +167,36 @@ function showToast(message: string, type: 'success' | 'error') {
         <section class="panel">
           <div class="section-header">
             <div>
-              <p class="eyebrow">Bookings</p>
-              <h2>{{ currentUser?.role === 'Admin' ? 'All bookings' : 'My bookings' }}</h2>
-            </div>
+              <p class="eyebrow">
+                {{ currentUser?.role === 'Admin' ? 'Admin View' : 'Your Schedule' }}
+              </p>
 
-            <span class="count-pill">{{ bookings.length }}</span>
+              <h2>{{ currentUser?.role === 'Admin' ? 'All bookings' : 'My bookings' }}</h2>
+
+              <p class="muted">
+                {{
+                  currentUser?.role === 'Admin'
+                    ? 'View and manage bookings for all users.'
+                    : 'View and manage your upcoming bookings.'
+                }}
+              </p>
+            </div>
+          </div>
+          <div class="booking-filter">
+            <button class="filter-button" :class="{ active: bookingStatusFilter === 'Active' }"
+              @click="bookingStatusFilter = 'Active'">
+              Active
+            </button>
+
+            <button class="filter-button" :class="{ active: bookingStatusFilter === 'Cancelled' }"
+              @click="bookingStatusFilter = 'Cancelled'">
+              Cancelled
+            </button>
+
+            <button class="filter-button" :class="{ active: bookingStatusFilter === undefined }"
+              @click="bookingStatusFilter = undefined">
+              All
+            </button>
           </div>
 
           <div v-if="isLoading" class="empty-state">
@@ -162,7 +209,7 @@ function showToast(message: string, type: 'success' | 'error') {
 
           <div v-else class="cards-list">
             <BookingCard v-for="booking in bookings" :key="booking.id ?? booking.bookingId" :booking="booking"
-              @cancel="onCancelBooking" />
+              @cancel="onCancelBooking" @cancel-series="onCancelSeries" />
           </div>
         </section>
       </section>

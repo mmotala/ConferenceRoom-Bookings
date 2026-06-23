@@ -23,7 +23,7 @@ concurrency:
 
 jobs:
   client:
-    name: Build and test Vue client
+    name: Validate Vue client
     runs-on: ubuntu-latest
 
     defaults:
@@ -37,15 +37,21 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.22.2
           cache: npm
           cache-dependency-path: Client/package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
+      - name: Type-check app
+        run: npm run type-check
+
+      - name: Type-check unit tests
+        run: npx vue-tsc --build tsconfig.vitest.json
+
       - name: Run unit tests
-        run: npm run test:unit
+        run: npm run test:unit -- --run
 
       - name: Build client
         run: npm run build

@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "test:unit": "vitest",
     "prepare": "cypress install",
+    "pretest:e2e": "npm run build",
     "test:e2e": "start-server-and-test preview http://localhost:4173 'cypress run --e2e'",
     "test:e2e:dev": "start-server-and-test 'vite dev --port 4173' http://localhost:4173 'cypress open --e2e'",
     "build-only": "vite build",
@@ -19,6 +20,11 @@
     "format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {
+    "@fullcalendar/daygrid": "^6.1.21",
+    "@fullcalendar/interaction": "^6.1.21",
+    "@fullcalendar/timegrid": "^6.1.21",
+    "@fullcalendar/vue3": "^6.1.21",
+    "@vuepic/vue-datepicker": "^14.0.0",
     "axios": "^1.18.0",
     "date-fns": "^4.4.0",
     "pinia": "^3.0.4",
