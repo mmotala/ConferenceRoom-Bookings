@@ -16,7 +16,7 @@ public sealed class UpdateBookingHandlerTests
         var newStart = DateTime.UtcNow.AddHours(4);
         var newEnd = DateTime.UtcNow.AddHours(5);
 
-        var result = await handler.Handle(new UpdateBooking.Command(
+        var result = await handler.Handle(new UpdateBookings.Command(
             booking.Id,
             fixture.Room.Id,
             newStart,
@@ -50,7 +50,7 @@ public sealed class UpdateBookingHandlerTests
 
         var handler = CreateHandler(fixture);
 
-        var result = await handler.Handle(new UpdateBooking.Command(
+        var result = await handler.Handle(new UpdateBookings.Command(
             bookingToUpdate.Id,
             fixture.Room.Id,
             DateTime.UtcNow.AddHours(5.5),
@@ -74,7 +74,7 @@ public sealed class UpdateBookingHandlerTests
 
         var handler = CreateHandler(fixture);
 
-        var result = await handler.Handle(new UpdateBooking.Command(
+        var result = await handler.Handle(new UpdateBookings.Command(
             booking.Id,
             fixture.Room.Id,
             DateTime.UtcNow.AddHours(4),
@@ -98,7 +98,7 @@ public sealed class UpdateBookingHandlerTests
 
         var handler = CreateHandler(fixture);
 
-        var result = await handler.Handle(new UpdateBooking.Command(
+        var result = await handler.Handle(new UpdateBookings.Command(
             booking.Id,
             fixture.Room.Id,
             DateTime.UtcNow.AddHours(4),
@@ -109,11 +109,11 @@ public sealed class UpdateBookingHandlerTests
         Assert.Equal(UserErrors.Forbidden, result.Error);
     }
 
-    private static UpdateBooking.Handler CreateHandler(BookingTestFixture fixture)
+    private static UpdateBookings.Handler CreateHandler(BookingTestFixture fixture)
     {
-        return new UpdateBooking.Handler(
+        return new UpdateBookings.Handler(
             fixture.Context,
             fixture.CurrentUser,
-            new UpdateBooking.Validator());
+            new UpdateBookings.Validator());
     }
 }

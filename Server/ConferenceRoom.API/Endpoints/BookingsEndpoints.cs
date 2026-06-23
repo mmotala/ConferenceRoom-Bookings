@@ -40,10 +40,10 @@ public static class BookingsEndpoints
         group.MapPut("/{bookingId:guid}", async (
             Guid bookingId,
             UpdateBookingRequest request,
-            UpdateBooking.Handler handler,
+            UpdateBookings.Handler handler,
             CancellationToken cancellationToken) =>
         {
-            var command = new UpdateBooking.Command(
+            var command = new UpdateBookings.Command(
                 bookingId,
                 request.RoomId,
                 request.StartTimeUtc,

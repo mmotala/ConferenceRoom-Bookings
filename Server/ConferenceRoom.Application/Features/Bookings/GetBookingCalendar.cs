@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace ConferenceRoomBooking.Application.Features.Bookings;
-
 public static class GetBookingCalendar
 {
     public sealed record Query(

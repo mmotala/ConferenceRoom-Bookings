@@ -117,6 +117,12 @@ Cypress E2E tests:
 npm run test:e2e
 ```
 
+Open Cypress interactively:
+
+```bash
+npm run test:e2e:open
+```
+
 This builds the client, serves the production preview on `http://localhost:4173`, and runs the Cypress specs in `Client/cypress/e2e`. The e2e tests use Cypress network intercepts for deterministic UI workflows, so no separate `.env.e2e` file is required. The client falls back to `http://localhost:5096` for API calls when `VITE_API_BASE_URL` is not set.
 
 ## CI

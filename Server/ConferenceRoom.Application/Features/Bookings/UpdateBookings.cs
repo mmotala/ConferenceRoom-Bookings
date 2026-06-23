@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
-public static class UpdateBooking
+public static class UpdateBookings
 {
     public sealed record Command(
         Guid BookingId,

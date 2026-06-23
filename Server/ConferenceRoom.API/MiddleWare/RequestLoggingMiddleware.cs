@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics;
 
-namespace ConferenceRoomBooking.Api.Middleware;
-
 public sealed class RequestLoggingMiddleware
 {
     private readonly RequestDelegate _next;

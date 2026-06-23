@@ -19,7 +19,7 @@ public static class DependencyInjection
         services.AddScoped<CreateBooking.Handler>();
         services.AddScoped<QuickBookRoom.Handler>();
         services.AddScoped<GetBookings.Handler>();
-        services.AddScoped<UpdateBooking.Handler>();
+        services.AddScoped<UpdateBookings.Handler>();
         services.AddScoped<CancelBooking.Handler>();
 
         services.AddScoped<CreateRecurringBooking.Handler>();
