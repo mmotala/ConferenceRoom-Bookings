@@ -70,6 +70,19 @@ public sealed class BookingTestFixture : IAsyncDisposable
         return user;
     }
 
+    public async Task<Room> AddRoomAsync(
+        string name = "Focus Room",
+        int capacity = 4,
+        string location = "Second Floor")
+    {
+        var room = new Room(name, capacity, location);
+
+        Context.Rooms.Add(room);
+        await Context.SaveChangesAsync();
+
+        return room;
+    }
+
     public async ValueTask DisposeAsync()
     {
         await Context.DisposeAsync();

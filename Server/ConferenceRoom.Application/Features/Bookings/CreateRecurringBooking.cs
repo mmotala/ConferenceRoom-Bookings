@@ -34,16 +34,17 @@ public static class CreateRecurringBooking
                 .WithMessage("Please select a room.");
 
             RuleFor(command => command.StartTimeUtc)
-                .GreaterThan(DateTime.UtcNow.AddMinutes(-1))
-                .WithMessage("Start time must be in the future.");
-
-            RuleFor(command => command.EndTimeUtc)
-                .GreaterThan(command => command.StartTimeUtc)
-                .WithMessage("End time must be after start time.");
+                .MustStartInFuture();
 
             RuleFor(command => command)
-                .Must(command => command.EndTimeUtc <= command.StartTimeUtc.AddHours(8))
-                .WithMessage("A booking cannot be longer than 8 hours.");
+                .MustEndAfterStart(
+                    command => command.StartTimeUtc,
+                    command => command.EndTimeUtc);
+
+            RuleFor(command => command)
+                .MustNotExceedMaximumDuration(
+                    command => command.StartTimeUtc,
+                    command => command.EndTimeUtc);
 
             RuleFor(command => command.Purpose)
                 .NotEmpty()
@@ -69,15 +70,18 @@ public static class CreateRecurringBooking
     {
         private readonly IApplicationDbContext _context;
         private readonly ICurrentUserService _currentUserService;
+        private readonly IBookingAvailabilityService _bookingAvailabilityService;
         private readonly IValidator<Command> _validator;
 
         public Handler(
             IApplicationDbContext context,
             ICurrentUserService currentUserService,
+            IBookingAvailabilityService bookingAvailabilityService,
             IValidator<Command> validator)
         {
             _context = context;
             _currentUserService = currentUserService;
+            _bookingAvailabilityService = bookingAvailabilityService;
             _validator = validator;
         }
 
@@ -120,7 +124,7 @@ public static class CreateRecurringBooking
                 return Result.Failure<Response>(Error.Validation("No recurring booking dates were generated."));
             }
 
-            var hasOverlap = await HasAnyOverlap(
+            var hasOverlap = await _bookingAvailabilityService.HasAnyRoomOverlapAsync(
                 command.RoomId,
                 occurrences,
                 cancellationToken);
@@ -168,7 +172,7 @@ public static class CreateRecurringBooking
                     booking.Status.ToString())).ToList()));
         }
 
-        private static IEnumerable<(DateTime StartTimeUtc, DateTime EndTimeUtc)> BuildOccurrences(
+        private static IEnumerable<BookingTimeRange> BuildOccurrences(
             Command command)
         {
             var currentStart = command.StartTimeUtc;
@@ -176,7 +180,7 @@ public static class CreateRecurringBooking
 
             while (currentStart <= command.RecurrenceUntilUtc)
             {
-                yield return (currentStart, currentEnd);
+                yield return new BookingTimeRange(currentStart, currentEnd);
 
                 (currentStart, currentEnd) = command.RecurrenceType switch
                 {
@@ -188,28 +192,5 @@ public static class CreateRecurringBooking
             }
         }
 
-        private async Task<bool> HasAnyOverlap(
-            Guid roomId,
-            List<(DateTime StartTimeUtc, DateTime EndTimeUtc)> occurrences,
-            CancellationToken cancellationToken)
-        {
-            foreach (var occurrence in occurrences)
-            {
-                var hasOverlap = await _context.Bookings
-                    .AnyAsync(booking =>
-                        booking.RoomId == roomId &&
-                        booking.Status == BookingStatus.Active &&
-                        booking.StartTimeUtc < occurrence.EndTimeUtc &&
-                        occurrence.StartTimeUtc < booking.EndTimeUtc,
-                        cancellationToken);
-
-                if (hasOverlap)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
     }
 }

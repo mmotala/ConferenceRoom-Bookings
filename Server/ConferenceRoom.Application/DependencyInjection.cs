@@ -25,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<CreateRecurringBooking.Handler>();
         services.AddScoped<CancelRecurringBookingSeries.Handler>();
         services.AddScoped<GetBookingCalendar.Handler>();
+        services.AddScoped<IBookingAvailabilityService, BookingAvailabilityService>();
 
         services.AddScoped<GetUsers.Handler>();
         services.AddScoped<CreateUser.Handler>();

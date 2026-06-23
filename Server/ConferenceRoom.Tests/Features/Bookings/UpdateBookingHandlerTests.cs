@@ -114,6 +114,7 @@ public sealed class UpdateBookingHandlerTests
         return new UpdateBookings.Handler(
             fixture.Context,
             fixture.CurrentUser,
+            new BookingAvailabilityService(fixture.Context),
             new UpdateBookings.Validator());
     }
 }

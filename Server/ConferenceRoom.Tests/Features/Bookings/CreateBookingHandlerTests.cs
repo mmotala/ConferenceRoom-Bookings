@@ -88,6 +88,7 @@ public sealed class CreateBookingHandlerTests
         return new CreateBooking.Handler(
             fixture.Context,
             fixture.CurrentUser,
+            new BookingAvailabilityService(fixture.Context),
             new CreateBooking.Validator());
     }
 }

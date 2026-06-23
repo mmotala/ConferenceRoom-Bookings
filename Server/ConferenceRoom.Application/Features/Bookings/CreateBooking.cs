@@ -26,16 +26,17 @@ public static class CreateBooking
                 .NotEmpty();
 
             RuleFor(command => command.StartTimeUtc)
-                .GreaterThan(DateTime.UtcNow.AddMinutes(-1))
-                .WithMessage("Booking start time must be in the future.");
-
-            RuleFor(command => command.EndTimeUtc)
-                .GreaterThan(command => command.StartTimeUtc)
-                .WithMessage("Booking end time must be after start time.");
+                .MustStartInFuture();
 
             RuleFor(command => command)
-                .Must(command => command.EndTimeUtc <= command.StartTimeUtc.AddHours(8))
-                .WithMessage("A booking cannot be longer than 8 hours.");
+                .MustEndAfterStart(
+                    command => command.StartTimeUtc,
+                    command => command.EndTimeUtc);
+
+            RuleFor(command => command)
+                .MustNotExceedMaximumDuration(
+                    command => command.StartTimeUtc,
+                    command => command.EndTimeUtc);
 
             RuleFor(command => command.Purpose)
                 .NotEmpty()
@@ -47,15 +48,18 @@ public static class CreateBooking
     {
         private readonly IApplicationDbContext _context;
         private readonly ICurrentUserService _currentUserService;
+        private readonly IBookingAvailabilityService _bookingAvailabilityService;
         private readonly IValidator<Command> _validator;
 
         public Handler(
             IApplicationDbContext context,
             ICurrentUserService currentUserService,
+            IBookingAvailabilityService bookingAvailabilityService,
             IValidator<Command> validator)
         {
             _context = context;
             _currentUserService = currentUserService;
+            _bookingAvailabilityService = bookingAvailabilityService;
             _validator = validator;
         }
 
@@ -91,13 +95,11 @@ public static class CreateBooking
                 return Result.Failure<Response>(UserErrors.NotFound);
             }
 
-            var hasOverlap = await _context.Bookings
-                .AnyAsync(booking =>
-                    booking.RoomId == command.RoomId &&
-                    booking.Status == BookingStatus.Active &&
-                    booking.StartTimeUtc < command.EndTimeUtc &&
-                    command.StartTimeUtc < booking.EndTimeUtc,
-                    cancellationToken);
+            var hasOverlap = await _bookingAvailabilityService.HasRoomOverlapAsync(
+                command.RoomId,
+                command.StartTimeUtc,
+                command.EndTimeUtc,
+                cancellationToken: cancellationToken);
 
             if (hasOverlap)
             {

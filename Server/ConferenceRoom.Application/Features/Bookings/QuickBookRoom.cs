@@ -26,16 +26,17 @@ public static class QuickBookRoom
         public Validator()
         {
             RuleFor(command => command.StartTimeUtc)
-                .GreaterThan(DateTime.UtcNow.AddMinutes(-1))
-                .WithMessage("Booking start time must be in the future.");
-
-            RuleFor(command => command.EndTimeUtc)
-                .GreaterThan(command => command.StartTimeUtc)
-                .WithMessage("Booking end time must be after start time.");
+                .MustStartInFuture();
 
             RuleFor(command => command)
-                .Must(command => command.EndTimeUtc <= command.StartTimeUtc.AddHours(8))
-                .WithMessage("A booking cannot be longer than 8 hours.");
+                .MustEndAfterStart(
+                    command => command.StartTimeUtc,
+                    command => command.EndTimeUtc);
+
+            RuleFor(command => command)
+                .MustNotExceedMaximumDuration(
+                    command => command.StartTimeUtc,
+                    command => command.EndTimeUtc);
 
             RuleFor(command => command.NumberOfPeople)
                 .GreaterThan(0)

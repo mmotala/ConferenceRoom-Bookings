@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ConferenceRoom.API\ConferenceRoom.API.csproj" />
     <ProjectReference Include="..\ConferenceRoom.Application\ConferenceRoom.Application.csproj" />
     <ProjectReference Include="..\ConferenceRoom.Infrastructure\ConferenceRoom.Infrastructure.csproj" />
   </ItemGroup>
