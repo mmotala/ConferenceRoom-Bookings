@@ -1,6 +1,4 @@
-﻿using ConferenceRoomBooking.Application.Features.Bookings;
-
-public static class BookingsEndpoints
+﻿public static class BookingsEndpoints
 {
     public static IEndpointRouteBuilder MapBookingsEndpoints(this IEndpointRouteBuilder app)
     {

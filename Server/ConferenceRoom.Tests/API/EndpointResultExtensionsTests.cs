@@ -1,5 +1,6 @@
-using System.Text.Json;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using System.Text.Json;
 using Xunit;
 
 public sealed class EndpointResultExtensionsTests
@@ -7,8 +8,19 @@ public sealed class EndpointResultExtensionsTests
     [Fact]
     public async Task ToHttpResult_WithValidationError_WritesProblemDetails()
     {
-        var httpContext = new DefaultHttpContext();
+        // Arrange
+        var services = new ServiceCollection()
+            .AddLogging()
+            .AddProblemDetails()
+            .BuildServiceProvider();
+
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = services
+        };
+
         httpContext.Response.Body = new MemoryStream();
+
         var result = Result.Failure(Error.Validation("Purpose is required."));
 
         await result.ToHttpResult().ExecuteAsync(httpContext);

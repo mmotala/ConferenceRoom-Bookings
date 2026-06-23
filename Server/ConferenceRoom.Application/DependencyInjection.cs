@@ -1,7 +1,4 @@
-﻿
-
-using ConferenceRoomBooking.Application.Features.Bookings;
-using FluentValidation;
+﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 
 public static class DependencyInjection
