@@ -1,4 +1,3 @@
-import { defineComponent, h } from 'vue';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -7,29 +6,6 @@ const bookingsApi = vi.hoisted(() => ({
 }));
 
 vi.mock('@/features/bookings/api/bookingsApi', () => bookingsApi);
-
-vi.mock('@vuepic/vue-datepicker', () => ({
-  VueDatePicker: defineComponent({
-    name: 'VueDatePicker',
-    props: {
-      modelValue: {
-        type: Date,
-        default: null
-      }
-    },
-    emits: ['update:modelValue'],
-    setup(props, { emit }) {
-      return () =>
-        h('input', {
-          class: 'date-picker-stub',
-          value: props.modelValue instanceof Date ? props.modelValue.toISOString() : '',
-          onInput: (event: Event) => {
-            emit('update:modelValue', new Date((event.target as HTMLInputElement).value));
-          }
-        });
-    }
-  })
-}));
 
 import RecurringBookingForm from './RecurringBookingForm.vue';
 
@@ -55,7 +31,8 @@ describe('RecurringBookingForm', () => {
 
     await wrapper.get('button').trigger('click');
 
-    expect(wrapper.emitted('error')).toEqual([['Room is required.']]);
+    expect(wrapper.emitted('error')).toEqual([['Please fix the highlighted fields.']]);
+    expect(wrapper.text()).toContain('Room is required.');
 
     await wrapper.get('select').setValue('r1');
     await wrapper.get('input[placeholder="Weekly team sync"]').setValue('Leadership sync');

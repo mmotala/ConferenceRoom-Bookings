@@ -12,7 +12,8 @@ import {
   createRecurringBooking,
   getBookingCalendar,
   getBookings,
-  quickBookRoom
+  quickBookRoom,
+  updateBooking
 } from './bookingsApi';
 
 const mockedApiRequest = vi.mocked(apiRequest);
@@ -39,6 +40,12 @@ describe('bookings api', () => {
     await createBooking(bookingRequest);
     expect(mockedApiRequest).toHaveBeenLastCalledWith('/api/bookings', {
       method: 'POST',
+      body: bookingRequest
+    });
+
+    await updateBooking('b1', bookingRequest);
+    expect(mockedApiRequest).toHaveBeenLastCalledWith('/api/bookings/b1', {
+      method: 'PUT',
       body: bookingRequest
     });
 

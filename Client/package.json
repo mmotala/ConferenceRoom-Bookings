@@ -24,7 +24,6 @@
     "@fullcalendar/interaction": "^6.1.21",
     "@fullcalendar/timegrid": "^6.1.21",
     "@fullcalendar/vue3": "^6.1.21",
-    "@vuepic/vue-datepicker": "^14.0.0",
     "axios": "^1.18.0",
     "date-fns": "^4.4.0",
     "pinia": "^3.0.4",

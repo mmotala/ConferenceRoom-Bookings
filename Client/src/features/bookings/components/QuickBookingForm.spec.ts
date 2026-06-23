@@ -1,4 +1,3 @@
-import { defineComponent, h } from 'vue';
 import { mount } from '@vue/test-utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -7,29 +6,6 @@ const bookingsApi = vi.hoisted(() => ({
 }));
 
 vi.mock('@/features/bookings/api/bookingsApi', () => bookingsApi);
-
-vi.mock('@vuepic/vue-datepicker', () => ({
-  VueDatePicker: defineComponent({
-    name: 'VueDatePicker',
-    props: {
-      modelValue: {
-        type: Date,
-        default: null
-      }
-    },
-    emits: ['update:modelValue'],
-    setup(props, { emit }) {
-      return () =>
-        h('input', {
-          class: 'date-picker-stub',
-          value: props.modelValue instanceof Date ? props.modelValue.toISOString() : '',
-          onInput: (event: Event) => {
-            emit('update:modelValue', new Date((event.target as HTMLInputElement).value));
-          }
-        });
-    }
-  })
-}));
 
 import QuickBookingForm from './QuickBookingForm.vue';
 
@@ -62,7 +38,8 @@ describe('QuickBookingForm', () => {
 
     await wrapper.get('button').trigger('click');
 
-    expect(wrapper.emitted('error')).toEqual([['Purpose is required.']]);
+    expect(wrapper.emitted('error')).toEqual([['Please fix the highlighted fields.']]);
+    expect(wrapper.text()).toContain('Purpose is required.');
 
     await wrapper.get('input[type="number"]').setValue(5);
     await wrapper.get('input[placeholder="Team sync"]').setValue('Team sync');

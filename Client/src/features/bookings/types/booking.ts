@@ -24,6 +24,8 @@ export type CreateBookingRequest = {
   purpose: string;
 };
 
+export type UpdateBookingRequest = CreateBookingRequest;
+
 export type QuickBookingRequest = {
   startTimeUtc: string;
   endTimeUtc: string;

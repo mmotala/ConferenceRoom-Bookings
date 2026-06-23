@@ -42,7 +42,7 @@ jobs:
           cache-dependency-path: Client/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Type-check app
         run: npm run type-check

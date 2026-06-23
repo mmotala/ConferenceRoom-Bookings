@@ -160,6 +160,25 @@ button {
   border-color: transparent;
 }
 
+.form-row.invalid input,
+.form-row.invalid select {
+  border-color: #d83a4a;
+  background: #fff7f8;
+}
+
+.form-row.invalid input:focus,
+.form-row.invalid select:focus {
+  border-color: #d83a4a;
+  box-shadow: 0 0 0 4px rgba(216, 58, 74, 0.13);
+}
+
+.field-error {
+  margin: 0;
+  color: #b42330;
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .form-row input:focus,
 .form-row select:focus {
   border-color: #4f6df5;
@@ -186,6 +205,17 @@ button {
   width: 100%;
 }
 
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.form-actions .primary-button,
+.form-actions .ghost-button {
+  width: auto;
+}
+
 .primary-button {
   color: white;
   background: #172033;
@@ -207,6 +237,15 @@ button {
   color: #c82e3a;
   background: #ffe8eb;
   margin-top: 14px;
+}
+
+.secondary-button.compact,
+.danger-button.compact,
+.booking-actions .secondary-button,
+.booking-actions .danger-button {
+  width: auto;
+  margin-top: 0;
+  padding: 9px 12px;
 }
 
 button:hover {
@@ -282,6 +321,13 @@ button:disabled {
   margin-top: 14px;
   color: #4b5568;
   font-size: 14px;
+}
+
+.booking-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
 }
 
 .empty-state {
@@ -372,32 +418,6 @@ button:disabled {
     align-items: flex-start;
     flex-direction: column;
   }
-}
-
-.dp__main {
-  font-family: inherit;
-  width: 100%;
-}
-
-.dp__input {
-  border: 1px solid #d7deeb;
-  border-radius: 14px;
-  padding: 11px 14px;
-  font-size: 14px;
-  min-height: 44px;
-}
-
-.dp__input:focus {
-  border-color: #4f6df5;
-}
-
-.dp__theme_light {
-  --dp-primary-color: #4f6df5;
-  --dp-border-radius: 14px;
-}
-
-.dp__menu {
-  z-index: 9999;
 }
 
 .calendar-panel {

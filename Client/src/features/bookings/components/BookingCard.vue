@@ -7,6 +7,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
+  edit: [booking: Booking];
   cancel: [bookingId: string];
   cancelSeries: [seriesId: string];
 }>();
@@ -42,6 +43,10 @@ function getBookingId() {
     </div>
 
     <div class="booking-actions" v-if="booking.status === 'Active'">
+      <button class="secondary-button compact" @click="emit('edit', booking)">
+        Update booking
+      </button>
+
       <button class="danger-button" @click="emit('cancel', getBookingId())">
         Cancel booking
       </button>

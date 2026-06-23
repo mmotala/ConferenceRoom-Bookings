@@ -1,35 +1,12 @@
-import { defineComponent, h } from 'vue';
 import { mount } from '@vue/test-utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const bookingsApi = vi.hoisted(() => ({
-  createBooking: vi.fn()
+  createBooking: vi.fn(),
+  updateBooking: vi.fn()
 }));
 
 vi.mock('@/features/bookings/api/bookingsApi', () => bookingsApi);
-
-vi.mock('@vuepic/vue-datepicker', () => ({
-  VueDatePicker: defineComponent({
-    name: 'VueDatePicker',
-    props: {
-      modelValue: {
-        type: Date,
-        default: null
-      }
-    },
-    emits: ['update:modelValue'],
-    setup(props, { emit }) {
-      return () =>
-        h('input', {
-          class: 'date-picker-stub',
-          value: props.modelValue instanceof Date ? props.modelValue.toISOString() : '',
-          onInput: (event: Event) => {
-            emit('update:modelValue', new Date((event.target as HTMLInputElement).value));
-          }
-        });
-    }
-  })
-}));
 
 import BookingForm from './BookingForm.vue';
 
@@ -57,6 +34,7 @@ describe('BookingForm', () => {
   beforeEach(() => {
     vi.setSystemTime(new Date('2030-01-01T08:00:00.000Z'));
     bookingsApi.createBooking.mockResolvedValue(booking);
+    bookingsApi.updateBooking.mockResolvedValue(booking);
   });
 
   afterEach(() => {
@@ -73,7 +51,8 @@ describe('BookingForm', () => {
 
     await wrapper.get('button').trigger('click');
 
-    expect(wrapper.emitted('error')).toEqual([['Room is required.']]);
+    expect(wrapper.emitted('error')).toEqual([['Please fix the highlighted fields.']]);
+    expect(wrapper.text()).toContain('Room is required.');
 
     await wrapper.get('select').setValue('r1');
     await wrapper.get('input[placeholder="Project planning"]').setValue('Project planning');
@@ -87,5 +66,27 @@ describe('BookingForm', () => {
       })
     );
     expect(wrapper.emitted('created')?.[0]?.[0]).toEqual(booking);
+  });
+
+  it('submits updates for an existing booking', async () => {
+    const wrapper = mount(BookingForm, {
+      props: {
+        rooms: [room],
+        booking
+      }
+    });
+
+    await wrapper.get('input[placeholder="Project planning"]').setValue('Updated planning');
+    await wrapper.get('button.primary-button').trigger('click');
+    await vi.dynamicImportSettled();
+
+    expect(bookingsApi.updateBooking).toHaveBeenCalledWith(
+      'b1',
+      expect.objectContaining({
+        roomId: 'r1',
+        purpose: 'Updated planning'
+      })
+    );
+    expect(wrapper.emitted('updated')?.[0]?.[0]).toEqual(booking);
   });
 });

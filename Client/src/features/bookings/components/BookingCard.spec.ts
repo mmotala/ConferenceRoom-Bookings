@@ -17,7 +17,7 @@ const activeBooking = {
 };
 
 describe('BookingCard', () => {
-  it('renders booking details and emits cancel actions', async () => {
+  it('renders booking details and emits edit and cancel actions', async () => {
     const wrapper = mount(BookingCard, {
       props: {
         booking: activeBooking
@@ -31,7 +31,9 @@ describe('BookingCard', () => {
     const buttons = wrapper.findAll('button');
     await buttons[0]!.trigger('click');
     await buttons[1]!.trigger('click');
+    await buttons[2]!.trigger('click');
 
+    expect(wrapper.emitted('edit')).toEqual([[activeBooking]]);
     expect(wrapper.emitted('cancel')).toEqual([['b1']]);
     expect(wrapper.emitted('cancelSeries')).toEqual([['series-1']]);
   });

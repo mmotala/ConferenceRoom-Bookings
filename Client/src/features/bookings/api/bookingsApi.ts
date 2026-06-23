@@ -5,7 +5,8 @@ import type {
   CalendarBooking,
   CreateBookingRequest,
   CreateRecurringBookingRequest,
-  QuickBookingRequest
+  QuickBookingRequest,
+  UpdateBookingRequest
 } from '@/features/bookings/types/booking';
 
 export function getBookings(status?: BookingStatus): Promise<Booking[]> {
@@ -17,6 +18,16 @@ export function getBookings(status?: BookingStatus): Promise<Booking[]> {
 export function createBooking(request: CreateBookingRequest): Promise<Booking> {
   return apiRequest<Booking>('/api/bookings', {
     method: 'POST',
+    body: request
+  });
+}
+
+export function updateBooking(
+  bookingId: string,
+  request: UpdateBookingRequest
+): Promise<Booking> {
+  return apiRequest<Booking>(`/api/bookings/${bookingId}`, {
+    method: 'PUT',
     body: request
   });
 }

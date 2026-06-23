@@ -26,6 +26,7 @@ const currentUser = ref<CurrentUser | null>(getCurrentUser());
 const rooms = ref<Room[]>([]);
 const bookings = ref<Booking[]>([]);
 const isLoading = ref(false);
+const editingBooking = ref<Booking | null>(null);
 
 const toast = ref<{
   message: string;
@@ -79,6 +80,16 @@ function logout() {
 async function onBookingCreated() {
   showSuccess('Booking created successfully');
   await loadDashboard();
+}
+
+async function onBookingUpdated() {
+  showSuccess('Booking updated successfully');
+  editingBooking.value = null;
+  await loadDashboard();
+}
+
+function onEditBooking(booking: Booking) {
+  editingBooking.value = booking;
 }
 
 async function onCancelBooking(bookingId: string) {
@@ -138,6 +149,15 @@ watch(bookingStatusFilter, async () => {
         <BookingForm :rooms="rooms" @created="onBookingCreated" @error="showError" />
         <RecurringBookingForm :rooms="rooms" @created="onBookingCreated" @error="showError" />
       </section>
+
+      <BookingForm
+        v-if="editingBooking"
+        :rooms="rooms"
+        :booking="editingBooking"
+        @updated="onBookingUpdated"
+        @cancel-edit="editingBooking = null"
+        @error="showError"
+      />
 
       <AdminRoomsPanel v-if="currentUser?.role === 'Admin'" :rooms="rooms" @changed="loadDashboard"
         @success="showSuccess" @error="showError" />
@@ -209,7 +229,7 @@ watch(bookingStatusFilter, async () => {
 
           <div v-else class="cards-list">
             <BookingCard v-for="booking in bookings" :key="booking.id ?? booking.bookingId" :booking="booking"
-              @cancel="onCancelBooking" @cancel-series="onCancelSeries" />
+              @edit="onEditBooking" @cancel="onCancelBooking" @cancel-series="onCancelSeries" />
           </div>
         </section>
       </section>
