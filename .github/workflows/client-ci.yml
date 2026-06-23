@@ -44,6 +44,9 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts
 
+      - name: Install Cypress binary
+        run: npx cypress install
+
       - name: Type-check app
         run: npm run type-check
 
@@ -55,3 +58,6 @@ jobs:
 
       - name: Build client
         run: npm run build
+
+      - name: Run Cypress E2E tests
+        run: npm run test:e2e:run

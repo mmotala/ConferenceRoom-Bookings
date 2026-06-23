@@ -111,17 +111,19 @@ npx vue-tsc --build tsconfig.vitest.json
 npm run test:unit -- --run
 ```
 
-Optional E2E tests:
+Cypress E2E tests:
 
 ```bash
 npm run test:e2e
 ```
 
+This builds the client, serves the production preview on `http://localhost:4173`, and runs the Cypress specs in `Client/cypress/e2e`. The e2e tests use Cypress network intercepts for deterministic UI workflows, so no separate `.env.e2e` file is required. The client falls back to `http://localhost:5096` for API calls when `VITE_API_BASE_URL` is not set.
+
 ## CI
 
 GitHub Actions includes separate backend and client workflows.
 
-Client CI runs dependency install, app type-check, unit-test type-check, Vitest unit tests, and a production build. Backend CI runs restore, build, and tests.
+Client CI runs dependency install, Cypress binary install, app type-check, unit-test type-check, Vitest unit tests, a production build, and Cypress E2E tests against the built preview. Backend CI runs restore, build, and tests.
 
 ## Assumptions and Trade-offs
 
