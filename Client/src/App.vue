@@ -1,17 +1,16 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+import { ref } from 'vue';
 
 import BookingCalendar from '@/features/bookings/components/BookingCalendar.vue';
 import BookingCard from '@/features/bookings/components/BookingCard.vue';
 import BookingForm from '@/features/bookings/components/BookingForm.vue';
 import QuickBookingForm from '@/features/bookings/components/QuickBookingForm.vue';
 import RecurringBookingForm from '@/features/bookings/components/RecurringBookingForm.vue';
-import { cancelBooking, getBookings, cancelRecurringSeries } from '@/features/bookings/api/bookingsApi';
-import type { Booking, BookingStatus } from '@/features/bookings/types/booking';
+import { cancelBooking, cancelRecurringSeries } from '@/features/bookings/api/bookingsApi';
+import { useDashboard } from '@/features/bookings/composables/useDashboard';
+import type { Booking } from '@/features/bookings/types/booking';
 import AdminRoomsPanel from '@/features/rooms/components/AdminRoomsPanel.vue';
 import RoomCard from '@/features/rooms/components/RoomCard.vue';
-import { getRooms } from '@/features/rooms/api/roomsApi';
-import type { Room } from '@/features/rooms/types/room';
 import AdminUsersPanel from '@/features/users/components/AdminUsersPanel.vue';
 import LoginPanel from '@/features/users/components/LoginPanel.vue';
 import {
@@ -21,47 +20,20 @@ import {
 import type { CurrentUser } from '@/features/users/types/auth';
 import AppHeader from '@/shared/components/AppHeader.vue';
 import Toast from '@/shared/components/Toast.vue';
+import { useToast } from '@/shared/composables/useToast';
 
 const currentUser = ref<CurrentUser | null>(getCurrentUser());
-const rooms = ref<Room[]>([]);
-const bookings = ref<Booking[]>([]);
-const isLoading = ref(false);
 const editingBooking = ref<Booking | null>(null);
 
-const toast = ref<{
-  message: string;
-  type: 'success' | 'error';
-} | null>(null);
-
-const bookingStatusFilter = ref<BookingStatus | undefined>('Active');
-
-onMounted(async () => {
-  if (currentUser.value) {
-    await loadDashboard();
-  }
-});
-
-async function loadDashboard() {
-  if (!currentUser.value) {
-    return;
-  }
-
-  isLoading.value = true;
-
-  try {
-    const [roomsResponse, bookingsResponse] = await Promise.all([
-      getRooms(),
-      getBookings(bookingStatusFilter.value)
-    ]);
-
-    rooms.value = roomsResponse;
-    bookings.value = bookingsResponse;
-  } catch (error) {
-    showError(error instanceof Error ? error.message : 'Failed to load dashboard');
-  } finally {
-    isLoading.value = false;
-  }
-}
+const { toast, showSuccess, showError } = useToast();
+const {
+  rooms,
+  bookings,
+  isLoading,
+  bookingStatusFilter,
+  loadDashboard,
+  clearDashboard
+} = useDashboard(currentUser, showError);
 
 async function onLoggedIn(user: CurrentUser) {
   currentUser.value = user;
@@ -72,8 +44,7 @@ async function onLoggedIn(user: CurrentUser) {
 function logout() {
   clearCurrentUser();
   currentUser.value = null;
-  rooms.value = [];
-  bookings.value = [];
+  clearDashboard();
   showSuccess('Logged out');
 }
 
@@ -111,26 +82,6 @@ async function onCancelSeries(seriesId: string) {
     showError(error instanceof Error ? error.message : 'Failed to cancel recurring event');
   }
 }
-
-function showSuccess(message: string) {
-  showToast(message, 'success');
-}
-
-function showError(message: string) {
-  showToast(message, 'error');
-}
-
-function showToast(message: string, type: 'success' | 'error') {
-  toast.value = { message, type };
-
-  window.setTimeout(() => {
-    toast.value = null;
-  }, 3500);
-}
-
-watch(bookingStatusFilter, async () => {
-  await loadDashboard();
-});
 </script>
 
 <template>

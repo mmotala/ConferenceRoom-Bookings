@@ -36,11 +36,7 @@ The API also includes global exception handling middleware, request logging midd
 
 ## Frontend Design
 
-The Vue client is organized by feature rather than by generic file type. Forms provide inline validation for exact field messages, while toast messages give a short summary such as:
-
-```text
-Please fix the highlighted fields.
-```
+The Vue client is organized by feature rather than by generic file type. Forms provide inline validation for exact field messages, while toast messages give a short summary when a form cannot be submitted.
 
 The shared API client attaches the selected dummy user as headers:
 
@@ -135,7 +131,7 @@ Client CI runs dependency install, Cypress binary install, app type-check, unit-
 
 - Authentication is intentionally implemented as dummy login for assessment scope.
 - EF Core InMemory is used for simple local persistence and fast setup.
-- A production version should use a relational database such as PostgreSQL. PostgreSQL would allow stronger concurrency guarantees for booking overlap prevention, especially with transactions, isolation levels, constraints, or exclusion constraints.
+- A production version should use a relational database such as PostgreSQL. PostgreSQL would allow stronger concurrency guarantees for booking overlap prevention with transactions and database-level guards such as exclusion constraints over room/time ranges.
 - SignalR was not implemented. It would be ideal for live UI updates when bookings are created, updated, or cancelled by another user.
 - Email notifications are represented by a dummy notification service rather than a real provider.
 
