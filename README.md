@@ -2,6 +2,19 @@
 
 A full-stack meeting room booking application built with a .NET API and a Vue client. The app supports room discovery, booking creation, booking updates, cancellations, recurring bookings, admin room/user management, validation feedback, and a calendar view.
 
+## Features
+
+- Demo login with user/admin roles
+- Browse available meeting rooms
+- Create, update, cancel, and filter bookings
+- Quick-book the smallest available room for a requested group size
+- Create and cancel recurring booking series
+- Calendar view with room filtering and cancelled-booking visibility
+- Admin room management
+- Admin user creation
+- Inline form validation with toast summaries
+- Problem-details API errors and global exception handling
+
 ## Tech Stack
 
 - Backend: .NET 9 Minimal API, EF Core InMemory, FluentValidation, Swagger/OpenAPI
