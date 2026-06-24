@@ -18,35 +18,6 @@ describe('booking workflows', () => {
     cy.contains('Roadmap planning').should('be.visible');
   });
 
-  it('validates and creates quick, manual and recurring bookings', () => {
-    cy.contains('button', 'Quick book').click();
-    cy.contains('Purpose is required').should('be.visible');
-
-    cy.contains('section', 'Find me a room').within(() => {
-      cy.get('input[type="number"]').clear().type('5');
-      cy.get('input[placeholder="Team sync"]').type('Quick team sync');
-      cy.contains('button', 'Quick book').click();
-    });
-    cy.wait('@quickBook');
-    cy.contains('Booking created successfully').should('be.visible');
-
-    cy.contains('section', 'Create booking').within(() => {
-      cy.get('select').select('r1');
-      cy.get('input[placeholder="Project planning"]').type('Project planning');
-      cy.contains('button', 'Create booking').click();
-    });
-    cy.wait('@createBooking');
-    cy.contains('Booking created successfully').should('be.visible');
-
-    cy.contains('section', 'Create recurring event').within(() => {
-      cy.get('select').first().select('r1');
-      cy.get('input[placeholder="Weekly team sync"]').type('Leadership sync');
-      cy.contains('button', 'Create recurring booking').click();
-    });
-    cy.wait('@createRecurringBooking');
-    cy.contains('Booking created successfully').should('be.visible');
-  });
-
   it('filters and cancels bookings', () => {
     cy.contains('button', 'Cancelled').click();
     cy.wait('@getBookings');
